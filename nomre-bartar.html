@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خوش آمدید - لابی</title>
+    <!-- بارگذاری فونت وزیرمتن برای نمایش زیبای فونت ضخیم فارسی -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- بارگذاری Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Vazirmatn', 'sans-serif'],
+                    },
+                    colors: {
+                        lobbyBg: 'var(--bg-main)',
+                        lobbyText: 'var(--text-main)',
+                        lobbyBar: 'var(--bar-bg)',
+                        lobbyIcon: 'var(--accent)',
+                        lobbyBtnBg: 'var(--btn-bg)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* تعریف متغیرهای پیش‌فرض تم سایت */
+        :root {
+            --bg-main: #121316;
+            --text-main: #8c8d90;
+            --bar-bg: #06201f;
+            --accent: #4a6b70;
+            --btn-bg: #091617;
+            --card-bg: #181a1f;
+            --border-color: #262930;
+        }
+
+        /* جلوگیری از اسکرول ناخواسته و تنظیم ارتفاع دقیق موبایل و دسکتاپ */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-main);
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* انیمیشن پیام انگیزشی روی صفحه */
+        .feedback-banner-transition {
+            transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .feedback-banner-hidden {
+            opacity: 0;
+            transform: translateY(-16px) scale(0.92);
+            pointer-events: none;
+        }
+        .feedback-banner-visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        /* انیمیشن نرم برای باز شدن مودال‌ها */
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        .modal-animate {
+            animation: fadeInScale 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* انیمیشن باز شدن منوی درس‌ها بالای دکمه + */
+        .subject-menu-transition {
+            transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s;
+        }
+        .subject-menu-closed {
+            opacity: 0;
+            transform: translateY(16px) scale(0.92);
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .subject-menu-open {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        /* انیمیشن و ترنزیشن نرم برای ورود، تغییر و خروج نمره در لابی */
+        .grade-item-transition {
+            transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), max-height 0.4s ease, margin 0.4s ease, padding 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+        }
+        .grade-item-enter {
+            opacity: 0;
+            transform: translateY(20px) scale(0.92);
+        }
+        .grade-item-highlight {
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 35%, transparent);
+            transform: scale(1.02);
+        }
+        .grade-item-exit {
+            opacity: 0;
+            transform: translateX(-25px) scale(0.94);
+        }
+
+        /* استایل پشته اعلان‌ها مشابه iOS */
+        .ios-stack-wrapper {
+            position: relative;
+            transition: height 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .ios-card {
+            transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                        opacity 0.35s ease,
+                        box-shadow 0.35s ease,
+                        border-color 0.35s ease,
+                        background-color 0.35s ease;
+            will-change: transform, opacity;
+        }
+    </style>
+</head>
+<body class="bg-lobbyBg text-lobbyText flex flex-col justify-between min-h-screen font-sans">
+
+    <!-- هدر بالای صفحه شامل دکمه‌های ورود و ثبت‌نام -->
+    <header class="w-full px-6 py-4 flex items-center justify-between z-20 relative">
+        <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-lobbyIcon animate-pulse"></span>
+            <span id="user-welcome-status" class="text-xs sm:text-sm font-bold text-gray-300">مهمان</span>
+        </div>
+        <div class="flex items-center gap-2.5">
+            <div id="auth-buttons-group" class="flex items-center gap-2">
+                <button onclick="openModal('login-modal')" class="px-4 py-2 bg-lobbyBtnBg hover:brightness-125 text-xs sm:text-sm font-bold text-gray-200 border border-[var(--border-color)] rounded-xl transition-all active:scale-95 shadow-sm">
+                    ورود (Login)
+                </button>
+                <button onclick="openModal('register-modal')" class="px-4 py-2 bg-lobbyIcon hover:brightness-110 text-xs sm:text-sm font-bold text-white rounded-xl transition-all active:scale-95 shadow-md">
+                    ثبت‌نام (Create Account)
+                </button>
+            </div>
+            <div id="user-profile-group" class="hidden items-center gap-2">
+                <span id="logged-username" class="text-xs sm:text-sm font-black text-lobbyIcon"></span>
+                <button onclick="handleLogout()" class="px-3 py-1.5 bg-red-950/60 hover:bg-red-900/80 text-red-200 border border-red-800/50 text-xs font-bold rounded-xl transition-all">
+                    خروج
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- بخش اصلی لابی (Lobby) -->
+    <main id="lobby-screen" class="flex-1 flex flex-col items-center justify-center px-6 pb-16 text-center relative">
+        
+        <!-- بنر پیام انگیزشی پس از ثبت یا ویرایش نمره -->
+        <div id="grade-feedback-banner" class="feedback-banner-transition feedback-banner-hidden fixed top-6 left-1/2 -translate-x-1/2 z-40 max-w-sm w-[90%] backdrop-blur-md border-2 rounded-2xl px-5 py-3.5 shadow-2xl flex items-center justify-center gap-2">
+            <span id="grade-feedback-text" class="text-base sm:text-lg font-black"></span>
+        </div>
+
+        <!-- کانتینر متن خوش‌آمدگویی -->
+        <div class="max-w-md w-full space-y-12 sm:space-y-16">
+            
+            <!-- تیتر اول: به این سایت خوش آمدی -->
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-lobbyText leading-snug">
+                به این سایت خوش آمدی
+            </h1>
+
+            <!-- متن دوم با آیکون حباب پیام در میان جمله (مشابه تصویر) -->
+            <div class="text-2xl sm:text-3xl md:text-4xl font-black text-lobbyText leading-relaxed flex flex-col items-center">
+                <p>برای خواندن راهنما</p>
+                
+                <div class="flex items-center justify-center flex-wrap gap-2 mt-1">
+                    <span>روی دکمه ی</span>
+                    
+                    <!-- آیکون حباب پیام کوچک داخل متن (قابل کلیک برای راحتی کاربر) -->
+                    <button onclick="openGuideModal()" aria-label="آیکون راهنما" class="inline-flex items-center justify-center translate-y-2 hover:scale-110 transition-transform focus:outline-none">
+                        <svg class="w-8 h-8 sm:w-10 sm:h-10 text-lobbyIcon fill-current" viewBox="0 0 24 24">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H8l-4 4v-4H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        </svg>
+                    </button>
+                    
+                    <span>کلیک</span>
+                </div>
+
+                <p class="mt-1 self-end pl-12 sm:pl-16">کنید</p>
+            </div>
+
+        </div>
+
+        <!-- لیست آیتم‌های اضافه شده توسط کاربر (در صورت استفاده از دکمه +) -->
+        <div id="user-items-container" class="w-full max-w-md mt-8 space-y-3 opacity-0 translate-y-4 pointer-events-none transition-all duration-500 ease-out hidden">
+            <div class="flex items-center justify-between px-1">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-lobbyIcon">نمرات ثبت شده:</span>
+                    <button id="collapse-stack-btn" onclick="collapseStack()" class="hidden text-[11px] font-bold bg-[var(--card-bg)] hover:brightness-125 text-gray-300 border border-[var(--border-color)] px-2.5 py-1 rounded-xl transition-all active:scale-95">
+                        جمع کردن ▲
+                    </button>
+                </div>
+                <div class="bg-[var(--card-bg)] border border-[var(--border-color)] px-3 py-1.5 rounded-xl flex items-center gap-2 shadow-sm transition-colors duration-300">
+                    <span class="text-xs font-bold text-gray-400">مجموع نمرات:</span>
+                    <span id="total-grades-sum" class="text-sm font-black text-lobbyIcon transition-transform duration-300 inline-block">0</span>
+                </div>
+            </div>
+            <div id="items-list" class="ios-stack-wrapper w-full"></div>
+        </div>
+
+    </main>
+
+    <!-- نوار ابزار پایینی (Bottom Navigation Bar) دقیقاً مشابه تصویر -->
+    <footer class="w-full bg-lobbyBar h-20 sm:h-24 px-4 sm:px-8 flex items-center justify-between shadow-2xl border-t border-[var(--border-color)] z-20 relative transition-colors duration-400">
+        
+        <!-- سمت راست (در RTL): دکمه حباب پیام / راهنما -->
+        <button onclick="openGuideModal()" 
+                class="w-14 h-14 sm:w-16 sm:h-16 bg-lobbyBtnBg rounded-2xl flex items-center justify-center shadow-inner hover:brightness-125 active:scale-95 transition-all cursor-pointer border border-[var(--border-color)]"
+                title="خواندن راهنما">
+            <svg class="w-8 h-8 sm:w-9 sm:h-9 text-lobbyIcon fill-current" viewBox="0 0 24 24">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H8l-4 4v-4H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            </svg>
+        </button>
+
+        <!-- مرکز: دکمه به علاوه (+) به همراه منوی کشویی انتخاب درس -->
+        <div class="relative flex items-center justify-center">
+            
+            <!-- کادر انتخاب درس با ترنزیشن نرم -->
+            <div id="subject-selector-menu" class="subject-menu-transition subject-menu-closed absolute bottom-20 sm:bottom-24 w-72 sm:w-80 bg-[var(--card-bg)]/95 backdrop-blur-md border border-[var(--border-color)] rounded-3xl p-4 shadow-2xl z-30">
+                <div class="text-xs font-bold text-lobbyIcon text-center mb-3 pb-2 border-b border-[var(--border-color)]">
+                    درس مورد نظر را انتخاب کنید
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="selectSubject('ریاضی')" class="py-2.5 px-3 bg-lobbyBg hover:bg-lobbyIcon hover:text-white text-gray-300 font-bold text-sm rounded-xl border border-[var(--border-color)] transition-all active:scale-95">ریاضی</button>
+                    <button onclick="selectSubject('فارسی')" class="py-2.5 px-3 bg-lobbyBg hover:bg-lobbyIcon hover:text-white text-gray-300 font-bold text-sm rounded-xl border border-[var(--border-color)] transition-all active:scale-95">فارسی</button>
+                    <button onclick="selectSubject('علوم')" class="py-2.5 px-3 bg-lobbyBg hover:bg-lobbyIcon hover:text-white text-gray-300 font-bold text-sm rounded-xl border border-[var(--border-color)] transition-all active:scale-95">علوم</button>
+                    <button onclick="selectSubject('هدیه')" class="py-2.5 px-3 bg-lobbyBg hover:bg-lobbyIcon hover:text-white text-gray-300 font-bold text-sm rounded-xl border border-[var(--border-color)] transition-all active:scale-95">هدیه</button>
+                    <button onclick="selectSubject('مطالعات')" class="py-2.5 px-3 bg-lobbyBg hover:bg-lobbyIcon hover:text-white text-gray-300 font-bold text-sm rounded-xl border border-[var(--border-color)] transition-all active:scale-95">مطالعات</button>
+                    <button onclick="selectSubject('کار و فناوری')" class="py-2.5 px-3 bg-lobbyBg hover:bg-lobbyIcon hover:text-white text-gray-300 font-bold text-sm rounded-xl border border-[var(--border-color)] transition-all active:scale-95">کار و فناوری</button>
+                    <button onclick="selectSubject('تفکر و پژوهش')" class="py-2.5 px-3 bg-lobbyBg hover:bg-lobbyIcon hover:text-white text-gray-300 font-bold text-sm rounded-xl border border-[var(--border-color)] transition-all active:scale-95">تفکر و پژوهش</button>
+                    <button onclick="selectSubject('قرآن')" class="py-2.5 px-3 bg-lobbyBg hover:bg-lobbyIcon hover:text-white text-gray-300 font-bold text-sm rounded-xl border border-[var(--border-color)] transition-all active:scale-95">قرآن</button>
+                </div>
+            </div>
+
+            <!-- دکمه + -->
+            <button id="plus-btn" onclick="toggleSubjectMenu()" 
+                    class="w-14 h-14 sm:w-16 sm:h-16 bg-lobbyBtnBg rounded-2xl flex items-center justify-center shadow-inner hover:brightness-125 active:scale-95 transition-all cursor-pointer border border-[var(--border-color)]"
+                    title="انتخاب درس و ثبت نمره">
+                <svg id="plus-icon" class="w-9 h-9 sm:w-10 sm:h-10 text-lobbyIcon transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </button>
+        </div>
+
+        <!-- سمت چپ (در RTL): دکمه تنظیمات به همراه نوار ۹ تم رنگی -->
+        <div class="relative flex items-center justify-center">
+            
+            <!-- نوار انتخاب ۹ تم با ترنزیشن نرم -->
+            <div id="theme-selector-menu" class="subject-menu-transition subject-menu-closed absolute bottom-20 sm:bottom-24 left-0 w-72 sm:w-80 bg-[var(--card-bg)]/95 backdrop-blur-md border border-[var(--border-color)] rounded-3xl p-4 shadow-2xl z-30">
+                <div class="text-xs font-bold text-lobbyIcon text-center mb-3 pb-2 border-b border-[var(--border-color)]">
+                    انتخاب تم ظاهری سایت (۹ تم)
+                </div>
+                <div id="themes-grid" class="grid grid-cols-3 gap-2"></div>
+            </div>
+
+            <!-- دکمه تنظیمات (چرخ‌دنده) -->
+            <button id="settings-btn" onclick="toggleThemeMenu()" 
+                    class="w-14 h-14 sm:w-16 sm:h-16 bg-lobbyBtnBg rounded-2xl flex items-center justify-center shadow-inner hover:brightness-125 active:scale-95 transition-all cursor-pointer border border-[var(--border-color)]"
+                    title="تنظیمات و تغییر تم">
+                <svg id="settings-icon" class="w-8 h-8 sm:w-9 sm:h-9 text-lobbyIcon transition-transform duration-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </button>
+        </div>
+
+    </footer>
+
+    <!-- مودال راهنما (باز می‌شود با کلیک روی دکمه حباب پیام) -->
+    <div id="guide-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50" onclick="closeModalOnBackdrop(event, 'guide-modal')">
+        <div class="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-3xl max-w-md w-full p-6 sm:p-8 text-right shadow-2xl modal-animate">
+            <div class="flex items-center justify-between mb-5 border-b border-[var(--border-color)] pb-4">
+                <h2 class="text-xl sm:text-2xl font-black text-gray-200">راهنمای سایت</h2>
+                <button onclick="closeModal('guide-modal')" class="text-gray-400 hover:text-white p-2 rounded-xl bg-[#22252c] transition-colors">
+                    ✕
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div class="bg-lobbyBg p-4 rounded-2xl border border-[var(--border-color)] space-y-2">
+                    <div class="flex items-center gap-2 text-lobbyIcon font-bold">
+                        <span>● دکمه راهنما (پایین راست):</span>
+                    </div>
+                    <p class="text-gray-400 text-xs sm:text-sm">هر زمان که نیاز به مشاهده قوانین، آموزش‌ها یا توضیحات بخش‌های مختلف داشتید، این پنجره را باز کنید.</p>
+                </div>
+
+                <div class="bg-lobbyBg p-4 rounded-2xl border border-[var(--border-color)] space-y-2">
+                    <div class="flex items-center gap-2 text-lobbyIcon font-bold">
+                        <span>● دکمه افزودن + (پایین وسط):</span>
+                    </div>
+                    <p class="text-gray-400 text-xs sm:text-sm">با لمس دکمه مثبت، لیست دروس باز می‌شود. پس از انتخاب درس مورد نظر، می‌توانید نمره آن را بین ۱ تا ۲۰ ثبت کنید.</p>
+                </div>
+
+                <div class="bg-lobbyBg p-4 rounded-2xl border border-[var(--border-color)] space-y-2">
+                    <div class="flex items-center gap-2 text-lobbyIcon font-bold">
+                        <span>● دکمه تنظیمات (پایین چپ):</span>
+                    </div>
+                    <p class="text-gray-400 text-xs sm:text-sm">با لمس آیکون چرخ‌دنده، نوار انتخاب ۹ تم رنگی برای تغییر ظاهر کل لابی باز می‌شود.</p>
+                </div>
+            </div>
+
+            <button onclick="closeModal('guide-modal')" class="mt-6 w-full py-3.5 bg-lobbyIcon hover:brightness-110 text-white font-bold rounded-2xl transition-all shadow-lg">
+                متوجه شدم، بازگشت به لابی
+            </button>
+        </div>
+    </div>
+
+    <!-- مودال ثبت نمره (باز می‌شود پس از انتخاب یکی از درس‌ها) -->
+    <div id="grade-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50" onclick="closeModalOnBackdrop(event, 'grade-modal')">
+        <div class="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-3xl max-w-sm w-full p-6 sm:p-8 text-right shadow-2xl modal-animate">
+            <div class="flex items-center justify-between mb-5 border-b border-[var(--border-color)] pb-4">
+                <h2 class="text-xl font-black text-gray-200"><span id="grade-modal-action">ثبت</span> نمره درس <span id="selected-subject-name" class="text-lobbyIcon"></span></h2>
+                <button onclick="closeModal('grade-modal')" class="text-gray-400 hover:text-white p-2 rounded-xl bg-[#22252c] transition-colors">
+                    ✕
+                </button>
+            </div>
+
+            <form onsubmit="handleAddGrade(event)" class="space-y-4">
+                <div>
+                    <label for="grade-input" class="block text-sm font-bold text-gray-400 mb-2">نمره را وارد کنید (از ۱ تا ۲۰):</label>
+                    <input type="number" id="grade-input" min="1" max="20" step="0.25" required placeholder="مثلاً: 19.5" 
+                           class="w-full bg-[#121316] border border-[#2a2e37] focus:border-lobbyIcon rounded-2xl px-4 py-3.5 text-center text-2xl font-black text-gray-100 outline-none transition-colors">
+                    <p id="grade-error" class="text-red-400 text-xs font-bold mt-2 hidden">لطفاً عددی بین ۱ تا ۲۰ وارد کنید.</p>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" id="grade-submit-btn" class="flex-1 py-3 bg-lobbyIcon hover:bg-[#587e84] text-white font-bold rounded-2xl transition-colors shadow-lg">
+                        ثبت نمره
+                    </button>
+                    <button type="button" onclick="closeModal('grade-modal')" class="px-5 py-3 bg-[#22252c] hover:bg-[#2c303a] text-gray-300 font-bold rounded-2xl transition-colors">
+                        انصراف
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- مودال ثبت‌نام (Create Account) -->
+    <div id="register-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50" onclick="closeModalOnBackdrop(event, 'register-modal')">
+        <div class="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-3xl max-w-sm w-full p-6 sm:p-8 text-right shadow-2xl modal-animate">
+            <div class="flex items-center justify-between mb-5 border-b border-[var(--border-color)] pb-4">
+                <h2 class="text-xl font-black text-gray-200">ساخت حساب کاربری (Register)</h2>
+                <button onclick="closeModal('register-modal')" class="text-gray-400 hover:text-white p-2 rounded-xl bg-[#22252c] transition-colors">
+                    ✕
+                </button>
+            </div>
+
+            <form onsubmit="handleRegister(event)" class="space-y-4">
+                <div>
+                    <label for="reg-username" class="block text-sm font-bold text-gray-400 mb-2">نام کاربری:</label>
+                    <input type="text" id="reg-username" required placeholder="نام کاربری خود را وارد کنید" 
+                           class="w-full bg-[#121316] border border-[#2a2e37] focus:border-lobbyIcon rounded-2xl px-4 py-3 text-sm font-bold text-gray-100 outline-none transition-colors">
+                </div>
+                <div>
+                    <label for="reg-password" class="block text-sm font-bold text-gray-400 mb-2">کلمه عبور:</label>
+                    <input type="password" id="reg-password" required placeholder="رمز عبور دلخواه" 
+                           class="w-full bg-[#121316] border border-[#2a2e37] focus:border-lobbyIcon rounded-2xl px-4 py-3 text-sm font-bold text-gray-100 outline-none transition-colors">
+                </div>
+                <p id="reg-error" class="text-red-400 text-xs font-bold hidden"></p>
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" class="flex-1 py-3 bg-lobbyIcon hover:brightness-110 text-white font-bold rounded-2xl transition-colors shadow-lg">
+                        ثبت‌نام
+                    </button>
+                    <button type="button" onclick="closeModal('register-modal')" class="px-5 py-3 bg-[#22252c] hover:bg-[#2c303a] text-gray-300 font-bold rounded-2xl transition-colors">
+                        انصراف
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- مودال ورود (Login) -->
+    <div id="login-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50" onclick="closeModalOnBackdrop(event, 'login-modal')">
+        <div class="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-3xl max-w-sm w-full p-6 sm:p-8 text-right shadow-2xl modal-animate">
+            <div class="flex items-center justify-between mb-5 border-b border-[var(--border-color)] pb-4">
+                <h2 class="text-xl font-black text-gray-200">ورود به حساب کاربری (Login)</h2>
+                <button onclick="closeModal('login-modal')" class="text-gray-400 hover:text-white p-2 rounded-xl bg-[#22252c] transition-colors">
+                    ✕
+                </button>
+            </div>
+
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label for="login-username" class="block text-sm font-bold text-gray-400 mb-2">نام کاربری:</label>
+                    <input type="text" id="login-username" required placeholder="نام کاربری" 
+                           class="w-full bg-[#121316] border border-[#2a2e37] focus:border-lobbyIcon rounded-2xl px-4 py-3 text-sm font-bold text-gray-100 outline-none transition-colors">
+                </div>
+                <div>
+                    <label for="login-password" class="block text-sm font-bold text-gray-400 mb-2">کلمه عبور:</label>
+                    <input type="password" id="login-password" required placeholder="رمز عبور" 
+                           class="w-full bg-[#121316] border border-[#2a2e37] focus:border-lobbyIcon rounded-2xl px-4 py-3 text-sm font-bold text-gray-100 outline-none transition-colors">
+                </div>
+                <p id="login-error" class="text-red-400 text-xs font-bold hidden"></p>
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" class="flex-1 py-3 bg-lobbyIcon hover:brightness-110 text-white font-bold rounded-2xl transition-colors shadow-lg">
+                        ورود
+                    </button>
+                    <button type="button" onclick="closeModal('login-modal')" class="px-5 py-3 bg-[#22252c] hover:bg-[#2c303a] text-gray-300 font-bold rounded-2xl transition-colors">
+                        انصراف
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let isSubjectMenuOpen = false;
+        let isThemeMenuOpen = false;
+        let currentSubject = '';
+        let editingItemEl = null;
+        let isStackExpanded = false;
+        let feedbackTimeout = null;
+
+        // مدیریت کاربران و نشست‌ها با localStorage
+        let currentUser = localStorage.getItem('lobby_current_user') || null;
+
+        function updateAuthUI() {
+            const authGroup = document.getElementById('auth-buttons-group');
+            const profileGroup = document.getElementById('user-profile-group');
+            const welcomeStatus = document.getElementById('user-welcome-status');
+            const loggedUsername = document.getElementById('logged-username');
+
+            if (currentUser) {
+                authGroup.classList.add('hidden');
+                profileGroup.classList.remove('hidden');
+                profileGroup.classList.add('flex');
+                welcomeStatus.textContent = 'کاربر فعال:';
+                loggedUsername.textContent = currentUser;
+            } else {
+                profileGroup.classList.remove('flex');
+                profileGroup.classList.add('hidden');
+                authGroup.classList.remove('hidden');
+                welcomeStatus.textContent = 'مهمان';
+            }
+        }
+
+        function handleRegister(event) {
+            event.preventDefault();
+            const username = document.getElementById('reg-username').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const errorEl = document.getElementById('reg-error');
+
+            let users = JSON.parse(localStorage.getItem('lobby_users') || '{}');
+            if (users[username]) {
+                errorEl.textContent = 'این نام کاربری قبلاً ثبت‌نام کرده است.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            users[username] = password;
+            localStorage.setItem('lobby_users', JSON.stringify(users));
+            currentUser = username;
+            localStorage.setItem('lobby_current_user', currentUser);
+
+            updateAuthUI();
+            closeModal('register-modal');
+            document.getElementById('reg-username').value = '';
+            document.getElementById('reg-password').value = '';
+            errorEl.classList.add('hidden');
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+            const errorEl = document.getElementById('login-error');
+
+            let users = JSON.parse(localStorage.getItem('lobby_users') || '{}');
+            if (!users[username] || users[username] !== password) {
+                errorEl.textContent = 'نام کاربری یا کلمه عبور اشتباه است.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            currentUser = username;
+            localStorage.setItem('lobby_current_user', currentUser);
+
+            updateAuthUI();
+            closeModal('login-modal');
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+            errorEl.classList.add('hidden');
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            localStorage.removeItem('lobby_current_user');
+            updateAuthUI();
+        }
+
+        // نمایش پیام انگیزشی روی صفحه بر اساس نمره ثبت شده با رنگ‌بندی سبز، زرد و قرمز
+        function showGradeFeedback(grade) {
+            const banner = document.getElementById('grade-feedback-banner');
+            const textEl = document.getElementById('grade-feedback-text');
+            if (!banner || !textEl) return;
+
+            // پاک‌سازی کلاس‌های رنگی قبلی
+            banner.classList.remove(
+                'bg-emerald-950/90', 'border-emerald-500', 'text-emerald-200', 'shadow-emerald-950/50',
+                'bg-amber-950/90', 'border-amber-400', 'text-amber-200', 'shadow-amber-950/50',
+                'bg-rose-950/90', 'border-rose-500', 'text-rose-200', 'shadow-rose-950/50'
+            );
+
+            let message = '';
+            if (grade > 18) {
+                message = 'آفرین 😎';
+                banner.classList.add('bg-emerald-950/90', 'border-emerald-500', 'text-emerald-200', 'shadow-emerald-950/50');
+            } else if (grade > 14 && grade <= 18) {
+                message = 'می توانست بهتر باشه 💪';
+                banner.classList.add('bg-amber-950/90', 'border-amber-400', 'text-amber-200', 'shadow-amber-950/50');
+            } else {
+                message = 'باید بیشتر تلاش کنی رفیق 👍';
+                banner.classList.add('bg-rose-950/90', 'border-rose-500', 'text-rose-200', 'shadow-rose-950/50');
+            }
+
+            textEl.textContent = message;
+
+            if (feedbackTimeout) {
+                clearTimeout(feedbackTimeout);
+            }
+
+            banner.classList.remove('feedback-banner-hidden');
+            banner.classList.add('feedback-banner-visible');
+
+            feedbackTimeout = setTimeout(() => {
+                banner.classList.remove('feedback-banner-visible');
+                banner.classList.add('feedback-banner-hidden');
+            }, 3500);
+        }
+
+        // تعریف ۹ تم اختصاصی برای لابی
+        const siteThemes = [
+            { id: 'default', name: 'زمرد تیره', bg: '#121316', text: '#8c8d90', bar: '#06201f', accent: '#4a6b70', btn: '#091617', card: '#181a1f', border: '#262930' },
+            { id: 'ocean', name: 'اقیانوس شب', bg: '#0c131d', text: '#94a3b8', bar: '#0a192f', accent: '#38bdf8', btn: '#112240', card: '#131e2e', border: '#1e2f47' },
+            { id: 'amethyst', name: 'بنفش سلطنتی', bg: '#14101d', text: '#a59cb8', bar: '#1f1333', accent: '#a855f7', btn: '#190f29', card: '#1c1726', border: '#2d243d' },
+            { id: 'crimson', name: 'یاقوت سرخ', bg: '#181012', text: '#a89598', bar: '#2b1116', accent: '#f43f5e', btn: '#210d11', card: '#211618', border: '#382226' },
+            { id: 'amber', name: 'کهربا و طلا', bg: '#17140f', text: '#a89f91', bar: '#292011', accent: '#f59e0b', btn: '#1f180c', card: '#211c15', border: '#362e22' },
+            { id: 'forest', name: 'جنگل بارانی', bg: '#0e1612', text: '#91a69a', bar: '#10261b', accent: '#10b981', btn: '#0b1c14', card: '#15211b', border: '#21362c' },
+            { id: 'sunset', name: 'غروب نارنجی', bg: '#18120e', text: '#ab998e', bar: '#2c1910', accent: '#fb923c', btn: '#21120b', card: '#221914', border: '#382820' },
+            { id: 'cyber', name: 'نئون سایبری', bg: '#0d0f14', text: '#9ca3af', bar: '#121824', accent: '#2dd4bf', btn: '#0e131c', card: '#141821', border: '#232a3b' },
+            { id: 'graphite', name: 'ذغالی کلاسیک', bg: '#161616', text: '#a3a3a3', bar: '#222222', accent: '#d4d4d8', btn: '#1a1a1a', card: '#1f1f1f', border: '#333333' }
+        ];
+
+        // ساخت دکمه‌های ۹ تم در نوار تنظیمات هنگام بارگذاری صفحه
+        function initThemes() {
+            const grid = document.getElementById('themes-grid');
+            if (!grid) return;
+            grid.innerHTML = siteThemes.map(t => `
+                <button onclick="applyTheme('${t.id}')" 
+                        data-theme-id="${t.id}"
+                        class="theme-option-btn flex flex-col items-center gap-1.5 p-2 rounded-2xl bg-lobbyBg border border-[var(--border-color)] hover:scale-105 active:scale-95 transition-all">
+                    <span class="w-6 h-6 rounded-full shadow-md border border-white/20 flex items-center justify-center" style="background: linear-gradient(135deg, ${t.bar} 50%, ${t.accent} 50%);"></span>
+                    <span class="text-[11px] font-bold text-gray-300 truncate w-full text-center">${t.name}</span>
+                </button>
+            `).join('');
+            highlightActiveTheme('default');
+        }
+
+        // اعمال تم انتخابی روی کل سایت با ترنزیشن
+        function applyTheme(themeId) {
+            const theme = siteThemes.find(t => t.id === themeId);
+            if (!theme) return;
+            const root = document.documentElement;
+            root.style.setProperty('--bg-main', theme.bg);
+            root.style.setProperty('--text-main', theme.text);
+            root.style.setProperty('--bar-bg', theme.bar);
+            root.style.setProperty('--accent', theme.accent);
+            root.style.setProperty('--btn-bg', theme.btn);
+            root.style.setProperty('--card-bg', theme.card);
+            root.style.setProperty('--border-color', theme.border);
+            highlightActiveTheme(themeId);
+        }
+
+        function highlightActiveTheme(activeId) {
+            document.querySelectorAll('.theme-option-btn').forEach(btn => {
+                if (btn.dataset.themeId === activeId) {
+                    btn.style.borderColor = 'var(--accent)';
+                    btn.classList.add('ring-1', 'ring-[var(--accent)]');
+                } else {
+                    btn.style.borderColor = 'var(--border-color)';
+                    btn.classList.remove('ring-1', 'ring-[var(--accent)]');
+                }
+            });
+        }
+
+        // باز و بسته کردن نوار تم‌های تنظیمات با انیمیشن
+        function toggleThemeMenu() {
+            if (isSubjectMenuOpen) {
+                toggleSubjectMenu();
+            }
+            const menu = document.getElementById('theme-selector-menu');
+            const icon = document.getElementById('settings-icon');
+            isThemeMenuOpen = !isThemeMenuOpen;
+
+            if (isThemeMenuOpen) {
+                menu.classList.remove('subject-menu-closed');
+                menu.classList.add('subject-menu-open');
+                icon.style.transform = 'rotate(90deg)';
+            } else {
+                menu.classList.remove('subject-menu-open');
+                menu.classList.add('subject-menu-closed');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // باز و بسته کردن منوی انتخاب درس با انیمیشن
+        function toggleSubjectMenu() {
+            if (isThemeMenuOpen) {
+                toggleThemeMenu();
+            }
+            const menu = document.getElementById('subject-selector-menu');
+            const icon = document.getElementById('plus-icon');
+            isSubjectMenuOpen = !isSubjectMenuOpen;
+
+            if (isSubjectMenuOpen) {
+                menu.classList.remove('subject-menu-closed');
+                menu.classList.add('subject-menu-open');
+                icon.style.transform = 'rotate(45deg)';
+            } else {
+                menu.classList.remove('subject-menu-open');
+                menu.classList.add('subject-menu-closed');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // بستن منوهای باز در صورت کلیک بیرون از آن‌ها
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('subject-selector-menu');
+            const plusBtn = document.getElementById('plus-btn');
+            if (isSubjectMenuOpen && menu && plusBtn && !menu.contains(event.target) && !plusBtn.contains(event.target)) {
+                toggleSubjectMenu();
+            }
+
+            const themeMenu = document.getElementById('theme-selector-menu');
+            const settingsBtn = document.getElementById('settings-btn');
+            if (isThemeMenuOpen && themeMenu && settingsBtn && !themeMenu.contains(event.target) && !settingsBtn.contains(event.target)) {
+                toggleThemeMenu();
+            }
+        });
+
+        // انتخاب درس و باز کردن کادر ثبت نمره
+        function selectSubject(subjectName) {
+            editingItemEl = null;
+            currentSubject = subjectName;
+            if (isSubjectMenuOpen) {
+                toggleSubjectMenu();
+            }
+
+            document.getElementById('grade-modal-action').textContent = 'ثبت';
+            document.getElementById('grade-submit-btn').textContent = 'ثبت نمره';
+            document.getElementById('selected-subject-name').textContent = subjectName;
+            document.getElementById('grade-error').classList.add('hidden');
+            const gradeInput = document.getElementById('grade-input');
+            gradeInput.value = '';
+
+            openModal('grade-modal');
+
+            setTimeout(() => {
+                gradeInput.focus();
+            }, 100);
+        }
+
+        // باز کردن کادر ویرایش نمره برای آیتم انتخاب شده
+        function editGradeItem(event, btnElement) {
+            if (event) event.stopPropagation();
+            const itemEl = btnElement.closest('[data-subject]');
+            editingItemEl = itemEl;
+            currentSubject = itemEl.dataset.subject;
+            const currentGrade = itemEl.dataset.grade;
+
+            document.getElementById('grade-modal-action').textContent = 'ویرایش';
+            document.getElementById('grade-submit-btn').textContent = 'ذخیره تغییرات';
+            document.getElementById('selected-subject-name').textContent = currentSubject;
+            document.getElementById('grade-error').classList.add('hidden');
+            
+            const gradeInput = document.getElementById('grade-input');
+            gradeInput.value = currentGrade;
+
+            openModal('grade-modal');
+
+            setTimeout(() => {
+                gradeInput.focus();
+                gradeInput.select();
+            }, 100);
+        }
+
+        // باز کردن پنجره مودال
+        function openModal(modalId) {
+            if (isSubjectMenuOpen) {
+                toggleSubjectMenu();
+            }
+            if (isThemeMenuOpen) {
+                toggleThemeMenu();
+            }
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        // بستن پنجره‌ها
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            if (modalId === 'grade-modal') {
+                editingItemEl = null;
+            }
+        }
+
+        // بستن پنجره با کلیک روی فضای تیره اطراف
+        function closeModalOnBackdrop(event, modalId) {
+            if (event.target && event.target.id === modalId) {
+                closeModal(modalId);
+            }
+        }
+
+        // ثبت یا ویرایش نمره درس در صفحه لابی
+        function handleAddGrade(event) {
+            event.preventDefault();
+            const input = document.getElementById('grade-input');
+            const errorMsg = document.getElementById('grade-error');
+            const gradeValue = parseFloat(input.value);
+            
+            if (isNaN(gradeValue) || gradeValue < 1 || gradeValue > 20) {
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            errorMsg.classList.add('hidden');
+
+            if (editingItemEl) {
+                editingItemEl.dataset.grade = gradeValue;
+                const badge = editingItemEl.querySelector('.grade-badge');
+                badge.textContent = `نمره: ${gradeValue} از ۲۰`;
+                
+                editingItemEl.classList.add('grade-item-highlight');
+                setTimeout(() => {
+                    editingItemEl.classList.remove('grade-item-highlight');
+                }, 600);
+                
+                editingItemEl = null;
+                updateTotalGrades();
+                renderIOSStack();
+                showGradeFeedback(gradeValue);
+            } else {
+                const container = document.getElementById('user-items-container');
+                const list = document.getElementById('items-list');
+
+                if (container.classList.contains('hidden')) {
+                    container.classList.remove('hidden');
+                    requestAnimationFrame(() => {
+                        container.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+                    });
+                }
+
+                const itemEl = document.createElement('div');
+                itemEl.dataset.subject = currentSubject;
+                itemEl.dataset.grade = gradeValue;
+                itemEl.onclick = function() { handleCardClick(); };
+                itemEl.className = 'ios-card bg-[var(--card-bg)]/95 backdrop-blur-md border border-[var(--border-color)] rounded-2xl px-4 py-3.5 flex items-center justify-between text-gray-300 text-sm font-bold shadow-lg select-none';
+                itemEl.innerHTML = `
+                    <div class="flex items-center gap-2.5 flex-wrap">
+                        <span class="text-gray-200 font-black">${escapeHtml(currentSubject)}</span>
+                        <span class="grade-badge bg-lobbyBtnBg text-lobbyIcon border border-[var(--border-color)] px-2.5 py-1 rounded-xl text-xs font-black">نمره: ${gradeValue} از ۲۰</span>
+                        <span class="stack-count-badge hidden bg-lobbyIcon text-white px-2.5 py-0.5 rounded-full text-[11px] font-black shadow-sm"></span>
+                    </div>
+                    <div class="card-actions flex items-center gap-1.5">
+                        <button onclick="editGradeItem(event, this)" class="text-xs text-lobbyIcon hover:text-white px-2.5 py-1.5 rounded-xl bg-lobbyBg border border-[var(--border-color)] transition-colors">ویرایش</button>
+                        <button onclick="removeGradeItem(event, this)" class="text-xs text-red-400 hover:text-red-300 px-2.5 py-1.5 rounded-xl bg-lobbyBg border border-[var(--border-color)] transition-colors">حذف</button>
+                    </div>
+                `;
+
+                list.prepend(itemEl);
+                isStackExpanded = false;
+                updateTotalGrades();
+                renderIOSStack(true);
+                showGradeFeedback(gradeValue);
+            }
+
+            input.value = '';
+            closeModal('grade-modal');
+        }
+
+        // کلیک روی کارت جمع‌شده برای باز کردن پشته iOS
+        function handleCardClick() {
+            const items = document.querySelectorAll('#items-list [data-subject]');
+            if (items.length > 1 && !isStackExpanded) {
+                isStackExpanded = true;
+                renderIOSStack();
+            }
+        }
+
+        // جمع کردن دوباره کارت‌ها روی هم
+        function collapseStack() {
+            isStackExpanded = false;
+            renderIOSStack();
+        }
+
+        // چیدمان و انیمیشن پشته کارت‌ها دقیقاً مشابه اعلان‌های iOS
+        function renderIOSStack(isNewAdded = false) {
+            const list = document.getElementById('items-list');
+            const collapseBtn = document.getElementById('collapse-stack-btn');
+            const items = Array.from(list.querySelectorAll('[data-subject]'));
+            const count = items.length;
+
+            if (count === 0) {
+                list.style.height = '0px';
+                collapseBtn.classList.add('hidden');
+                return;
+            }
+
+            if (count === 1) {
+                isStackExpanded = false;
+                collapseBtn.classList.add('hidden');
+            } else {
+                if (isStackExpanded) {
+                    collapseBtn.classList.remove('hidden');
+                } else {
+                    collapseBtn.classList.add('hidden');
+                }
+            }
+
+            const cardHeight = 60;
+            const gap = 10;
+
+            if (isStackExpanded || count === 1) {
+                items.forEach((item, index) => {
+                    item.style.position = 'absolute';
+                    item.style.top = '0px';
+                    item.style.left = '0px';
+                    item.style.right = '0px';
+                    item.style.zIndex = count - index;
+                    item.style.opacity = '1';
+                    item.style.pointerEvents = 'auto';
+                    item.style.cursor = 'default';
+                    item.style.transform = `translateY(${index * (cardHeight + gap)}px) scale(1)`;
+
+                    const stackBadge = item.querySelector('.stack-count-badge');
+                    const actions = item.querySelector('.card-actions');
+                    if (stackBadge) stackBadge.classList.add('hidden');
+                    if (actions) actions.classList.remove('hidden');
+                });
+                list.style.height = `${count * cardHeight + (count - 1) * gap}px`;
+            } else {
+                const visibleLayers = Math.min(count, 3);
+                items.forEach((item, index) => {
+                    item.style.position = 'absolute';
+                    item.style.top = '0px';
+                    item.style.left = '0px';
+                    item.style.right = '0px';
+                    item.style.zIndex = count - index;
+
+                    const stackBadge = item.querySelector('.stack-count-badge');
+                    const actions = item.querySelector('.card-actions');
+
+                    if (index === 0) {
+                        item.style.opacity = '1';
+                        item.style.pointerEvents = 'auto';
+                        item.style.cursor = 'pointer';
+                        item.style.transform = 'translateY(0px) scale(1)';
+                        if (stackBadge) {
+                            stackBadge.textContent = `+${count - 1} درس دیگر`;
+                            stackBadge.classList.remove('hidden');
+                        }
+                        if (actions) actions.classList.add('hidden');
+
+                        if (isNewAdded) {
+                            item.classList.add('grade-item-highlight');
+                            setTimeout(() => item.classList.remove('grade-item-highlight'), 650);
+                        }
+                    } else if (index === 1) {
+                        item.style.opacity = '0.88';
+                        item.style.pointerEvents = 'none';
+                        item.style.transform = 'translateY(11px) scale(0.95)';
+                        if (stackBadge) stackBadge.classList.add('hidden');
+                        if (actions) actions.classList.add('hidden');
+                    } else if (index === 2) {
+                        item.style.opacity = '0.68';
+                        item.style.pointerEvents = 'none';
+                        item.style.transform = 'translateY(21px) scale(0.90)';
+                        if (stackBadge) stackBadge.classList.add('hidden');
+                        if (actions) actions.classList.add('hidden');
+                    } else {
+                        item.style.opacity = '0';
+                        item.style.pointerEvents = 'none';
+                        item.style.transform = 'translateY(24px) scale(0.86)';
+                    }
+                });
+                list.style.height = `${cardHeight + (visibleLayers - 1) * 11}px`;
+            }
+        }
+
+        // حذف نمره با ترنزیشن خروج نرم
+        function removeGradeItem(event, btnElement) {
+            if (event) event.stopPropagation();
+            const itemEl = btnElement.closest('[data-subject]');
+            itemEl.style.opacity = '0';
+            itemEl.style.transform = 'translateX(-30px) scale(0.9)';
+            setTimeout(() => {
+                itemEl.remove();
+                updateTotalGrades();
+                renderIOSStack();
+                checkEmptyList();
+            }, 320);
+        }
+
+        // محاسبه و نمایش جمع کل نمرات با افکت بزرگ‌نمایی نرم
+        function updateTotalGrades() {
+            const items = document.querySelectorAll('#items-list [data-grade]');
+            let total = 0;
+            items.forEach(item => {
+                const val = parseFloat(item.dataset.grade);
+                if (!isNaN(val)) {
+                    total += val;
+                }
+            });
+            total = Math.round(total * 100) / 100;
+
+            const sumEl = document.getElementById('total-grades-sum');
+            if (sumEl) {
+                sumEl.textContent = total;
+                sumEl.classList.add('scale-125', 'text-white');
+                setTimeout(() => {
+                    sumEl.classList.remove('scale-125', 'text-white');
+                }, 300);
+            }
+        }
+
+        // بررسی خالی بودن لیست برای مخفی کردن تیتر آن با ترنزیشن
+        function checkEmptyList() {
+            const list = document.getElementById('items-list');
+            const container = document.getElementById('user-items-container');
+            if (list.children.length === 0) {
+                container.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+                setTimeout(() => {
+                    if (list.children.length === 0) {
+                        container.classList.add('hidden');
+                    }
+                }, 400);
+            }
+        }
+
+        // جلوگیری از تزریق کد در ورودی کاربر
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // مقداردهی اولیه تم‌ها و وضعیت حساب کاربری
+        initThemes();
+        updateAuthUI();
+    </script>
+</body>
+</html>
